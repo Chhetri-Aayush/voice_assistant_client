@@ -1,6 +1,9 @@
+"use client";
 import { AudioLines, CalendarCheck, Loader, Speech } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Main() {
+  const router = useRouter();
   return (
     <main>
       <section className="pt-12 pb-24 px-6 text-center max-w-4xl mx-auto">
@@ -17,7 +20,12 @@ export default function Main() {
         </p>
 
         <div className="flex flex-col items-center gap-6 ">
-          <button className="group relative flex flex-col items-center justify-center gap-4 bg-primary text-white w-64 h-64 rounded-full shadow-2xl shadow-blue-500/40 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer">
+          <button
+            className="group relative flex flex-col items-center justify-center gap-4 bg-primary text-white w-64 h-64 rounded-full shadow-2xl shadow-blue-500/40 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+            onClick={() => {
+              router.push("/chat");
+            }}
+          >
             <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 rounded-full transition-opacity"></div>
             <AudioLines size={72} />
             <span className="text-2xl font-bold">Start Speaking</span>
