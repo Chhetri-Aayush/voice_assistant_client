@@ -36,8 +36,8 @@
 
   .glass-bubble-user {
     background: color-mix(in srgb, var(--primary) 90%, transparent);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    /* backdrop-filter: blur(16px); */
+    /* -webkit-backdrop-filter: blur(16px); */
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 10px 35px rgba(59, 130, 246, 0.18);
   }
@@ -50,9 +50,7 @@
   }
 
   .glow-btn {
-    box-shadow:
-      0 0 0 0 rgba(59, 130, 246, 0.4),
-      0 0 35px rgba(59, 130, 246, 0.45);
+    box-shadow: 0 0 35px rgba(59, 130, 246, 0.4);
   }
 
   .glow-btn:hover {

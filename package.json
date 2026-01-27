@@ -10,10 +10,11 @@
     "format": "biome format --write"
   },
   "dependencies": {
+    "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
+    "pnpm": "^10.28.2",
     "react": "19.2.3",
-    "react-audio-voice-recorder": "^2.2.0",
     "react-dom": "19.2.3"
   },
   "devDependencies": {

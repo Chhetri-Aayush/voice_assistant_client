@@ -1,4 +1,5 @@
 "use client";
+import clsx from "clsx";
 import {
   BotMessageSquare,
   Calendar,
@@ -8,11 +9,44 @@ import {
   Mic,
   User,
 } from "lucide-react";
-import { ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { ReactNode, useEffect, useRef, useState } from "react";
+import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 
 export default function ChatPage() {
-  const router = useRouter();
+  const { recordingBlob, isRecording, startRecording, stopRecording } =
+    useAudioRecorder();
+
+  const handleMouseDown = () => {
+    console.log("voice recording is started");
+    startRecording();
+  };
+
+  const handleMouseUp = () => {
+    console.log("voice recording is stopped and sent to the server");
+    stopRecording();
+  };
+
+  useEffect(() => {
+    if (!recordingBlob) return;
+
+    // console.log("🎧 recording blob ready", recordingBlob);
+    const audioUrl = URL.createObjectURL(recordingBlob);
+    const audio = new Audio(audioUrl);
+
+    // console.log("📻 Playing audio in console...");
+    audio.play();
+
+    // Optional: Log when audio finishes
+    audio.onended = () => {
+      // console.log("✅ Audio playback finished");
+      URL.revokeObjectURL(audioUrl);
+    };
+    // Example upload
+    // const fd = new FormData();
+    // fd.append("audio", recordingBlob);
+    // fetch("/api/transcribe", { method: "POST", body: fd });
+  }, [recordingBlob]);
+
   return (
     <>
       {/* MAIN CONTENT */}
@@ -45,10 +79,6 @@ export default function ChatPage() {
                   You
                 </span>
                 <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center">
-                  {/* <span className="material-symbols-outlined text-slate-600 text-[14px]">
-                    person
-                  </span> */}
-                  {/* <BotMessageSquare color="white" size={15} /> */}
                   <User size={15} />
                 </div>
               </div>
@@ -81,15 +111,27 @@ export default function ChatPage() {
 
         {/* SIDEBAR */}
         <aside className="w-45 sidebar-glass p-6 flex flex-col shrink-0 press-scale md:w-60 lg:w-75">
-          <h2 className="text-xl font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
+          <h2 className="text-xl font-bold tracking-widest mb-6 flex items-center gap-2">
             <ClipboardPlus className="text-blue-600 w-5 h-5" />
             नियुक्ति सारांश
           </h2>
 
           <div className="space-y-4">
-            <SummaryItem icon={<ClipboardPlus />} text="दन्त चिकित्सक" />
-            <SummaryItem icon={<Calendar />} text="भोलि" />
-            <SummaryItem icon={<Clock />} text="बिहान १० बजे" />
+            <SummaryItem
+              icon={<ClipboardPlus size={16} />}
+              text="दन्त चिकित्सक"
+              label="विशेषज्ञ"
+            />
+            <SummaryItem
+              icon={<Calendar size={16} />}
+              text="भोलि"
+              label="मिति"
+            />
+            <SummaryItem
+              icon={<Clock size={16} />}
+              text="बिहान १० बजे"
+              label="समय"
+            />
           </div>
 
           {/* <button className="mt-auto bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg glow-btn press-scale flex items-center justify-center gap-2 hover:bg-blue-700 transition-all">
@@ -104,13 +146,25 @@ export default function ChatPage() {
             <Keyboard className="w-6 h-6" />
           </button>
           <div className="relative group">
-            <div className="absolute -inset-6 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
-            <button className="relative z-10 glow-btn bg-blue-600 text-white w-28 h-28 rounded-full flex flex-col items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-xl">
+            <div
+              className={clsx(
+                "absolute -inset-6 rounded-full blur-xl transition-all",
+                isRecording ? "bg-red-100" : "bg-blue-200",
+              )}
+            ></div>
+            <button
+              onMouseDown={handleMouseDown}
+              onMouseUp={handleMouseUp}
+              className={clsx(
+                "relative z-10 glow-btn text-white w-28 h-28 rounded-full flex flex-col items-center justify-center transition-transform hover:scale-105 active:scale-75 shadow-xl",
+                isRecording ? "bg-red-600" : "bg-blue-600",
+              )}
+            >
               <Mic className="w-10 h-10" />
             </button>
-            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-              <p className="text-blue-600 font-bold text-sm tracking-wide">
-                Hold to Speak / बोल्न थिच्नुहोस्
+            <div className="absolute -bottom-8 left-[9%] -translate-x-1/2 whitespace-nowrap">
+              <p className="text-blue-600 font-bold text-base tracking-wide">
+                {!isRecording ? "बोल्न थिच्नुहोस्" : "बोलेपछि छोड्नुहोस्।"}
               </p>
             </div>
           </div>
@@ -120,11 +174,22 @@ export default function ChatPage() {
   );
 }
 
-function SummaryItem({ icon, text }: { icon: ReactNode; text: string }) {
+function SummaryItem({
+  icon,
+  text,
+  label,
+}: {
+  icon: ReactNode;
+  text: string;
+  label: string;
+}) {
   return (
-    <div className="bg-white/80 p-4 rounded-2xl border shadow-sm flex gap-2 items-center press-scale hover:scale-105 transition-transform">
-      <span className="text-blue-500 flex items-center">{icon}</span>
-      <span className="font-semibold">{text}</span>
+    <div className="bg-white/80 p-4 rounded-2xl border shadow-sm hover:scale-105 transition-transform">
+      <label className="text-sm font-bold text-slate-500 ">{label}</label>
+      <div className="flex items-center gap-2 mt-1">
+        <span className="text-blue-500 ">{icon}</span>
+        <span className="font-semibold text-lg ">{text}</span>
+      </div>
     </div>
   );
 }
