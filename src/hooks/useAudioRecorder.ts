@@ -104,11 +104,11 @@ export function useAudioRecorder(): UseAudioRecorder {
   //     const audio = new Audio(audioUrl);
   //     audioRef.current = audio;
 
-  //     console.log("📻 Playing audio...");
+  //     console.log(" Playing audio...");
   //     audio.play();
 
   //     audio.onended = () => {
-  //       console.log("✅ Audio playback finished");
+  //       console.log("Audio playback finished");
   //       URL.revokeObjectURL(audioUrl);
   //     };
   //   };

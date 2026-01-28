@@ -17,34 +17,46 @@ export default function ChatPage() {
     useAudioRecorder();
 
   const handleMouseDown = () => {
-    console.log("voice recording is started");
+    // console.log("voice recording is started");
     startRecording();
   };
 
   const handleMouseUp = () => {
-    console.log("voice recording is stopped and sent to the server");
+    // console.log("voice recording is stopped and sent to the server");
     stopRecording();
   };
 
   useEffect(() => {
     if (!recordingBlob) return;
 
-    // console.log("🎧 recording blob ready", recordingBlob);
-    const audioUrl = URL.createObjectURL(recordingBlob);
-    const audio = new Audio(audioUrl);
+    //audio playing logic
+    // const audioUrl = URL.createObjectURL(recordingBlob);
+    // const audio = new Audio(audioUrl);
+    // console.log("playing audio ");
+    // audio.play();
+    // audio.onended = () => {
+    //   URL.revokeObjectURL(audioUrl);
+    // };
 
-    // console.log("📻 Playing audio in console...");
-    audio.play();
+    async function sendForTranscription() {
+      const formData = new FormData();
+      formData.append("audio", recordingBlob!, "audio.webm");
+      const response = await fetch("/api/transcribeAudio", {
+        method: "POST",
+        body: formData,
+      });
 
-    // Optional: Log when audio finishes
-    audio.onended = () => {
-      // console.log("✅ Audio playback finished");
-      URL.revokeObjectURL(audioUrl);
-    };
-    // Example upload
-    // const fd = new FormData();
-    // fd.append("audio", recordingBlob);
-    // fetch("/api/transcribe", { method: "POST", body: fd });
+      if (!response.ok) {
+        console.error("Transcription request failed:", response.statusText);
+        return;
+      }
+      const data = await response.json();
+      // const text = await transcrbieAudio(formData);
+      //TODO: send the transcribed text to the server and also add the transcribed text to the message state so that it can be displayed in the chat
+      console.log("transcribed text:", data.transcription);
+    }
+
+    sendForTranscription();
   }, [recordingBlob]);
 
   return (
