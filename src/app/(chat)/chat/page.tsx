@@ -12,9 +12,15 @@ import {
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 
+import { useWebSocket } from "@/hooks/useWebSocket";
+
 export default function ChatPage() {
   const { recordingBlob, isRecording, startRecording, stopRecording } =
     useAudioRecorder();
+
+  const { messages, sendMessage, isConnected } = useWebSocket(
+    "ws://localhost:8000/api/v1/appointment",
+  );
 
   const handleMouseDown = () => {
     // console.log("voice recording is started");
@@ -54,11 +60,11 @@ export default function ChatPage() {
       // const text = await transcrbieAudio(formData);
       //TODO: send the transcribed text to the server and also add the transcribed text to the message state so that it can be displayed in the chat
       console.log("transcribed text:", data.transcription);
+      sendMessage({ role: "user", content: data.transcription });
     }
 
     sendForTranscription();
   }, [recordingBlob]);
-
   return (
     <>
       {/* MAIN CONTENT */}
@@ -66,58 +72,44 @@ export default function ChatPage() {
         {/* CHAT AREA */}
         <main className="flex-1 overflow-y-auto px-6 py-8">
           <div className="max-w-2xl mx-auto space-y-10 mb-20">
-            {/* Assistant */}
-            <div className="flex flex-col items-start gap-3">
-              <div className="flex items-center gap-2 px-2">
-                <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
-                  <BotMessageSquare color="white" size={15} />
-                </div>
-                <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">
-                  Assistant
-                </span>
-              </div>
+            {messages.map((msg, index) => (
+              <div key={index}>
+                {msg.role === "assistant" ? (
+                  <div className="flex flex-col items-start gap-3">
+                    <div className="flex items-center gap-2 px-2">
+                      <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
+                        <BotMessageSquare color="white" size={15} />
+                      </div>
+                      <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">
+                        Assistant
+                      </span>
+                    </div>
 
-              <div className="glass-bubble p-6 rounded-3xl rounded-tl-none max-w-[90%] press-scale">
-                <p className="text-xl font-medium">
-                  नमस्ते! म तपाईंलाई कसरी सहयोग गर्न सक्छु?
-                </p>
-              </div>
-            </div>
+                    <div className="glass-bubble p-6 rounded-3xl rounded-tl-none max-w-[90%] press-scale">
+                      <p className="text-xl font-medium">{msg.content}</p>
+                    </div>
+                  </div>
+                ) : (
+                  /* User Type */
+                  <div className="flex flex-col items-end gap-3">
+                    <div className="flex items-center gap-2 px-2">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                        You
+                      </span>
+                      <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center">
+                        <User size={15} />
+                      </div>
+                    </div>
 
-            {/* User */}
-            <div className="flex flex-col items-end gap-3">
-              <div className="flex items-center gap-2 px-2">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                  You
-                </span>
-                <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center">
-                  <User size={15} />
-                </div>
+                    <div className="glass-bubble-user p-6 rounded-3xl rounded-tr-none max-w-[90%] press-scale">
+                      <p className="text-xl text-white font-medium">
+                        {msg.content}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
-
-              <div className="glass-bubble-user p-6 rounded-3xl rounded-tr-none max-w-[90%] press-scale">
-                <p className="text-xl text-white font-medium">
-                  म भोलि दन्त चिकित्सकलाई भेट्न चाहन्छु।
-                </p>
-              </div>
-            </div>
-
-            {/* Assistant */}
-            <div className="flex flex-col items-start gap-3">
-              <div className="flex items-center gap-2 px-2">
-                <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
-                  <BotMessageSquare color="white" size={15} />
-                </div>
-                <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">
-                  Assistant
-                </span>
-              </div>
-              <div className="glass-bubble p-6 rounded-3xl rounded-tl-none max-w-[90%] press-scale">
-                <p className="text-xl font-medium">
-                  निश्चय नै! मैले भोलि बिहान १० बजेको लागि समय खाली पाएको छु।
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </main>
 
@@ -145,13 +137,10 @@ export default function ChatPage() {
               label="समय"
             />
           </div>
-
-          {/* <button className="mt-auto bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg glow-btn press-scale flex items-center justify-center gap-2 hover:bg-blue-700 transition-all">
-            Confirm Booking
-          </button> */}
         </aside>
       </div>
 
+      {/* FOOTER / RECORDING AREA */}
       <div className="relative z-20 px-8 pb-10 pt-4 pointer-events-none">
         <div className="max-w-3xl mx-auto flex items-center justify-center gap-10 pointer-events-auto">
           <button className="w-14 h-14 rounded-full glass-bubble flex items-center justify-center text-slate-500 hover:text-blue-600 transition-all active:scale-90">

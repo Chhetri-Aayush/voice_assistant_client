@@ -1,8 +1,14 @@
 import { useEffect, useRef, useState } from "react";
+import { Message } from "@/types/socket";
 
 export function useWebSocket(url: string) {
   const socketRef = useRef<WebSocket | null>(null);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: "assistant",
+      content: "नमस्ते! म तपाईंलाई कसरी सहयोग गर्न सक्छु?",
+    },
+  ]);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
@@ -10,10 +16,12 @@ export function useWebSocket(url: string) {
     socketRef.current = socket;
 
     socketRef.current.onopen = () => {
+      console.log("finally it is connected");
       setIsConnected(true);
     };
 
     socketRef.current.onmessage = (event) => {
+      console.log("message sent form the backend is :", event.data);
       const data = JSON.parse(event.data);
       setMessages((prev) => [...prev, data]);
     };
@@ -34,6 +42,9 @@ export function useWebSocket(url: string) {
   const sendMessage = (data: any) => {
     if (socketRef.current?.readyState === WebSocket.OPEN) {
       socketRef.current.send(JSON.stringify(data));
+      // console.log("message sent to the backend is :", data);
+      const dataWithRole = { role: "user" as const, content: data.content };
+      setMessages((prev) => [...prev, dataWithRole]);
     } else {
       console.log("websocket is not open so it can't send the message ");
     }
