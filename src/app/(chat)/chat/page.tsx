@@ -143,19 +143,11 @@ export default function ChatPage() {
           <div className="space-y-4">
             <SummaryItem
               icon={<ClipboardPlus size={16} />}
-              text="दन्त चिकित्सक"
+              text="--"
               label="विशेषज्ञ"
             />
-            <SummaryItem
-              icon={<Calendar size={16} />}
-              text="भोलि"
-              label="मिति"
-            />
-            <SummaryItem
-              icon={<Clock size={16} />}
-              text="बिहान १० बजे"
-              label="समय"
-            />
+            <SummaryItem icon={<Calendar size={16} />} text="--" label="मिति" />
+            <SummaryItem icon={<Clock size={16} />} text="--" label="समय" />
           </div>
         </aside>
       </div>
