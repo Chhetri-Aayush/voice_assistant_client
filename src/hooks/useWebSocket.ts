@@ -3,12 +3,13 @@ import { Message } from "@/types/socket";
 
 export function useWebSocket(url: string) {
   const socketRef = useRef<WebSocket | null>(null);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "नमस्ते! म तपाईंलाई कसरी सहयोग गर्न सक्छु?",
-    },
-  ]);
+  // const [messages, setMessages] = useState<Message[]>([
+  //   {
+  //     role: "assistant",
+  //     content: "नमस्ते! म तपाईंलाई कसरी सहयोग गर्न सक्छु?",
+  //   },
+  // ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {

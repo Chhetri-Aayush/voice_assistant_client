@@ -1,8 +1,13 @@
-import speech from "@google-cloud/speech";
-import path from "path";
+// import speech from "@google-cloud/speech";
+// import path from "path";
+import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 
-const client = new speech.SpeechClient({
-  keyFilename: path.join(process.cwd(), "google-services.json"),
+// const client = new speech.SpeechClient({
+//   keyFilename: path.join(process.cwd(), "google-services.json"),
+// });
+
+const elevenlabs = new ElevenLabsClient({
+  apiKey: process.env.ELEVENLABS_API_KEY,
 });
 
 export async function POST(request: Request) {
@@ -17,34 +22,42 @@ export async function POST(request: Request) {
       });
     }
 
-    const buffer = await audioBlob.arrayBuffer();
-    const audioBytes = Buffer.from(buffer).toString("base64");
+    // const buffer = await audioBlob.arrayBuffer();
+    // const audioBytes = Buffer.from(buffer).toString("base64");
 
-    const speechRequest = {
-      audio: {
-        content: audioBytes,
-      },
-      config: {
-        encoding: "WEBM_OPUS" as const,
-        sampleRateHertz: 48000,
-        languageCode: "ne-NP",
-        enableAutomaticPunctuation: true,
-      },
-    };
+    // const speechRequest = {
+    //   audio: {
+    //     content: audioBytes,
+    //   },
+    //   config: {
+    //     encoding: "WEBM_OPUS" as const,
+    //     sampleRateHertz: 48000,
+    //     languageCode: "ne-NP",
+    //     enableAutomaticPunctuation: true,
+    //   },
+    // };
 
-    const [response] = await client.recognize(speechRequest);
+    const transcription = await elevenlabs.speechToText.convert({
+      file: audioBlob,
+      modelId: "scribe_v2",
+      languageCode: "nep",
+    });
+
+    console.log("trasnscription:", transcription.text);
+
+    // const [response] = await client.recognize(speechRequest);
 
     //extraction of the transcibed text
-    const transcription =
-      response.results
-        ?.map((result) => result.alternatives?.[0]?.transcript)
-        .filter(Boolean)
-        .join(" ") || "";
+    // const transcription =
+    //   response.results
+    //     ?.map((result) => result.alternatives?.[0]?.transcript)
+    //     .filter(Boolean)
+    //     .join(" ") || "";
 
     return new Response(
       JSON.stringify({
         success: true,
-        transcription: transcription,
+        transcription: transcription.text,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );

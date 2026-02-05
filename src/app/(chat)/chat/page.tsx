@@ -11,16 +11,18 @@ import {
 } from "lucide-react";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
+import { useTTS } from "@/hooks/useTTS";
 
 import { useWebSocket } from "@/hooks/useWebSocket";
 
 export default function ChatPage() {
+  const { playAudio } = useTTS();
   const { recordingBlob, isRecording, startRecording, stopRecording } =
     useAudioRecorder();
-
   const { messages, sendMessage, isConnected } = useWebSocket(
     "ws://localhost:8000/api/v1/appointment",
   );
+  const lastMessageRef = useRef<HTMLDivElement | null>(null);
 
   const handleMouseDown = () => {
     // console.log("voice recording is started");
@@ -65,6 +67,21 @@ export default function ChatPage() {
 
     sendForTranscription();
   }, [recordingBlob]);
+
+  useEffect(() => {
+    if (messages.length === 0) return;
+
+    const lastMessage = messages[messages.length - 1];
+
+    if (lastMessage.role === "assistant") {
+      playAudio(lastMessage.content);
+    }
+
+    if (lastMessageRef.current) {
+      lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, playAudio]);
+
   return (
     <>
       {/* MAIN CONTENT */}
@@ -72,44 +89,47 @@ export default function ChatPage() {
         {/* CHAT AREA */}
         <main className="flex-1 overflow-y-auto px-6 py-8">
           <div className="max-w-2xl mx-auto space-y-10 mb-20">
-            {messages.map((msg, index) => (
-              <div key={index}>
-                {msg.role === "assistant" ? (
-                  <div className="flex flex-col items-start gap-3">
-                    <div className="flex items-center gap-2 px-2">
-                      <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
-                        <BotMessageSquare color="white" size={15} />
+            {messages.map((msg, index) => {
+              const isLastMessage = index === messages.length - 1;
+              return (
+                <div ref={isLastMessage ? lastMessageRef : null} key={index}>
+                  {msg.role === "assistant" ? (
+                    <div className="flex flex-col items-start gap-3">
+                      <div className="flex items-center gap-2 px-2">
+                        <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
+                          <BotMessageSquare color="white" size={15} />
+                        </div>
+                        <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">
+                          Assistant
+                        </span>
                       </div>
-                      <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">
-                        Assistant
-                      </span>
-                    </div>
 
-                    <div className="glass-bubble p-6 rounded-3xl rounded-tl-none max-w-[90%] press-scale">
-                      <p className="text-xl font-medium">{msg.content}</p>
-                    </div>
-                  </div>
-                ) : (
-                  /* User Type */
-                  <div className="flex flex-col items-end gap-3">
-                    <div className="flex items-center gap-2 px-2">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                        You
-                      </span>
-                      <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center">
-                        <User size={15} />
+                      <div className="glass-bubble p-6 rounded-3xl rounded-tl-none max-w-[90%] press-scale">
+                        <p className="text-xl font-medium">{msg.content}</p>
                       </div>
                     </div>
+                  ) : (
+                    /* User Type */
+                    <div className="flex flex-col items-end gap-3">
+                      <div className="flex items-center gap-2 px-2">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                          You
+                        </span>
+                        <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center">
+                          <User size={15} />
+                        </div>
+                      </div>
 
-                    <div className="glass-bubble-user p-6 rounded-3xl rounded-tr-none max-w-[90%] press-scale">
-                      <p className="text-xl text-white font-medium">
-                        {msg.content}
-                      </p>
+                      <div className="glass-bubble-user p-6 rounded-3xl rounded-tr-none max-w-[90%] press-scale">
+                        <p className="text-xl text-white font-medium">
+                          {msg.content}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
+                  )}
+                </div>
+              );
+            })}
           </div>
         </main>
 
