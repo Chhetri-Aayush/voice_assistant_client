@@ -12,10 +12,11 @@ import {
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { useTTS } from "@/hooks/useTTS";
-
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { useRouter } from "next/navigation";
 
 export default function ChatPage() {
+  const router = useRouter();
   const { playAudio } = useTTS();
   const { recordingBlob, isRecording, startRecording, stopRecording } =
     useAudioRecorder();
@@ -149,6 +150,16 @@ export default function ChatPage() {
             <SummaryItem icon={<Calendar size={16} />} text="--" label="मिति" />
             <SummaryItem icon={<Clock size={16} />} text="--" label="समय" />
           </div>
+          <button
+            className=" mt-4 flex items-center gap-3 bg-primary rounded hover:bg-blue-600 text-white px-6 py-3 shadow-lg hover:shadow-xl transition-all group animate-fade-in-up cursor-pointer"
+            onClick={() => router.push("/appointments")}
+          >
+            {/* <div className="bg-white/20 p-2 rounded-full flex items-center justify-center">
+                  <Mic color="white" size={22} />
+                </div> */}
+
+            <span className="font-bold pr-2">तपाईंको अपोइन्टमेन्टहरू</span>
+          </button>
         </aside>
       </div>
 
