@@ -9,14 +9,21 @@ import {
   Mic,
   User,
 } from "lucide-react";
-import { ReactNode, useEffect, useRef, useState } from "react";
+
+import toast from "react-hot-toast";
+import { ReactNode, useEffect, useRef } from "react";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { useTTS } from "@/hooks/useTTS";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/authClient";
+
+import { toFullNepali } from "@/lib/extraFunc";
 
 export default function ChatPage() {
   const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
+
   const { playAudio } = useTTS();
   const { recordingBlob, isRecording, startRecording, stopRecording } =
     useAudioRecorder();
@@ -25,28 +32,18 @@ export default function ChatPage() {
   );
   const lastMessageRef = useRef<HTMLDivElement | null>(null);
 
-  const handleMouseDown = () => {
-    // console.log("voice recording is started");
-    startRecording();
-  };
-
-  const handleMouseUp = () => {
-    // console.log("voice recording is stopped and sent to the server");
-    stopRecording();
-  };
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.replace("/login");
+      toast.error("Please Login To Book Appointment", {
+        style: { background: "#ff4d4f", color: "#fff" },
+        iconTheme: { primary: "#fff", secondary: "#ff4d4f" },
+      });
+    }
+  }, [session, isPending, router]);
 
   useEffect(() => {
-    if (!recordingBlob) return;
-
-    //audio playing logic
-    // const audioUrl = URL.createObjectURL(recordingBlob);
-    // const audio = new Audio(audioUrl);
-    // console.log("playing audio ");
-    // audio.play();
-    // audio.onended = () => {
-    //   URL.revokeObjectURL(audioUrl);
-    // };
-
+    if (!session || !recordingBlob) return;
     async function sendForTranscription() {
       const formData = new FormData();
       formData.append("audio", recordingBlob!, "audio.webm");
@@ -63,7 +60,10 @@ export default function ChatPage() {
       // const text = await transcrbieAudio(formData);
       //TODO: send the transcribed text to the server and also add the transcribed text to the message state so that it can be displayed in the chat
       console.log("transcribed text:", data.transcription);
-      sendMessage({ role: "user", content: data.transcription });
+      const newData = toFullNepali(data.transcription);
+      console.log("the new data is ", newData);
+
+      sendMessage({ role: "user", content: newData });
     }
 
     sendForTranscription();
@@ -82,6 +82,16 @@ export default function ChatPage() {
       lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, playAudio]);
+
+  const handleMouseDown = () => {
+    startRecording();
+  };
+
+  const handleMouseUp = () => {
+    stopRecording();
+  };
+
+  if (!session) return null;
 
   return (
     <>
@@ -163,7 +173,6 @@ export default function ChatPage() {
         </aside>
       </div>
 
-      {/* FOOTER / RECORDING AREA */}
       <div className="relative z-20 px-8 pb-10 pt-4 pointer-events-none">
         <div className="max-w-3xl mx-auto flex items-center justify-center gap-10 pointer-events-auto">
           <button className="w-14 h-14 rounded-full glass-bubble flex items-center justify-center text-slate-500 hover:text-blue-600 transition-all active:scale-90">
