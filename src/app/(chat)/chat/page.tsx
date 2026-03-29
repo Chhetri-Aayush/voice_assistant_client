@@ -17,8 +17,7 @@ import { useTTS } from "@/hooks/useTTS";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/authClient";
-
-import { toFullNepali } from "@/lib/extraFunc";
+import { convertEnglishDatesToNepali, toFullNepali } from "@/lib/extraFunc";
 
 export default function ChatPage() {
   const router = useRouter();
@@ -76,6 +75,7 @@ export default function ChatPage() {
 
     if (lastMessage.role === "assistant") {
       playAudio(lastMessage.content);
+      // playAudio(convertEnglishDatesToNepali(lastMessage.content));
     }
 
     if (lastMessageRef.current) {
@@ -144,11 +144,10 @@ export default function ChatPage() {
           </div>
         </main>
 
-        {/* SIDEBAR */}
         <aside className="w-45 sidebar-glass p-6 flex flex-col shrink-0 press-scale md:w-60 lg:w-75">
           <h2 className="text-xl font-bold tracking-widest mb-6 flex items-center gap-2">
             <ClipboardPlus className="text-blue-600 w-5 h-5" />
-            नियुक्ति सारांश
+            अपोइन्टमेन्ट सारांश
           </h2>
 
           <div className="space-y-4">

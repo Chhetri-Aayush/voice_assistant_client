@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Message } from "@/types/socket";
+import {
+  convertEnglishDatesToNepali,
+  convertTimesToNepali,
+} from "@/lib/extraFunc";
 
 export function useWebSocket(url: string) {
   const socketRef = useRef<WebSocket | null>(null);
@@ -21,10 +25,22 @@ export function useWebSocket(url: string) {
       setIsConnected(true);
     };
 
+    // socketRef.current.onmessage = (event) => {
+    //   console.log("message sent form the backend is :", event.data);
+    //   const data = JSON.parse(event.data);
+    //   setMessages((prev) => [...prev, data]);
+    // };
     socketRef.current.onmessage = (event) => {
       console.log("message sent form the backend is :", event.data);
       const data = JSON.parse(event.data);
-      setMessages((prev) => [...prev, data]);
+      const converted = {
+        ...data,
+        content: convertTimesToNepali(
+          convertEnglishDatesToNepali(data.content),
+        ),
+        // content: (convertEnglishDatesToNepali(data.content),
+      };
+      setMessages((prev) => [...prev, converted]);
     };
 
     socketRef.current.onerror = (err) => {
